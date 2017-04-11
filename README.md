@@ -9,3 +9,6 @@ This portal will be great place for people looking for swift n friendly help wit
 
 Abstract2:
 The idea is to develop mobile application for android platform to help blind by  scanning the objects in front of the camera. Using machine learning, the app will identify the objects and display the result on screen .The app will also speak out loud the result so the user can know what object is in the front. 
+
+
+#### Abstract 1 approved
