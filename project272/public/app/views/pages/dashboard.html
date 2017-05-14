@@ -1,0 +1,111 @@
+<div class="clearfix">
+<form ng-Submit="main.postTask(taskDetails)">
+  <input required type="text" class="form-control" placeholder="Task Title" ng-model="main.taskDetails.title" />
+  <br>
+  <textarea required class="form-control" maxlength="200" rows="3" placeholder="Task Description" ng-model="main.taskDetails.description"></textarea>
+  <br>
+  <input class="btn submit-btn pull-right" type="submit" value="Post!" />
+  <div class="input-group">
+   <span class="input-group-addon" id="basic-addon1">Date</span>
+   <input type="date" class="form-control"aria-describedby="basic-addon1" ng-model="main.taskDetails.day" id="dateOfTask" />
+  </div>
+
+</form>
+<br><br><br>
+
+<div id="post-stream">
+    <div>
+        <p><strong>Total available task: </strong>{{ main.tasks.length }}</p>
+    </div>
+    <hr />
+    <div class="post" ng-repeat="task in main.tasks | orderBy : 'created_at':true track by task.taskId" ng-class-odd="'odd'" ng-class-even="'even'">
+        <div class="box">
+            <span>
+                <button id="taskstatus" type ="button" class="pull-right" ng-disabled="task.posted_by == main.username || task.status != 'available'" data-toggle="modal" data-target="#taskSelection" ng-class="{
+                    'btn btn-danger': task.status == 'Requested',
+                    'btn btn-info': task.status == 'Accepted',
+                    'btn btn-primary': task.status == 'available',
+                    'btn btn-success': task.status == 'completed',
+                    'btn btn-warning': task.status == 'submitted'}" ng-click="main.Params(task.taskId,task.status)">
+                {{task.status}}
+                </button>
+                <h4>Title : {{task.title}}</h4>
+            </span>
+
+            <p>Description : {{task.description}}</p>
+            <small>Posted by @{{task.posted_by}}</small>
+            <small ng-if="task.status == 'Requested'">| Requested by @{{task.accepted_by}}</small>
+            <small ng-if="task.status == 'Accepted'">| Working @{{task.accepted_by}}</small>
+            <small ng-if="task.status == 'submitted'"> | Submitted by {{task.accepted_by}}</small>
+            <small ng-if="task.status == 'completed'">| Done by @{{task.accepted_by}}</small>
+            <button type="button" class="btn pull-right" id="comments" ng-click="main.getComments(task.taskId)" ng-hide="toshowComment && selectedValue ==  task.taskId">comments</button>
+            <button type="button" class="btn pull-right" id="comments" ng-click="main.closeComments(task.taskId)" ng-show="toshowComment && selectedValue == task.taskId">Close comments</button>
+            <div>
+                <small>{{task.created_at | date:"h:mma 'on' MMM d, y"}}</small>
+                <small class="glyphicon glyphicon-map-marker"> {{task.posted_at.location}}</small>
+            </div>
+            <div ng-show="toshowComment && selectedValue == task.taskId">
+                <hr/>
+                <div>
+                    <p><strong>Comments: </strong>{{ main.task.comments.length }}</p>
+                </div>
+                <button type="button" id="add-comments" data-toggle="modal" data-target="#commentPost" ng-click="main.params1(task.taskId)">+ Comment</button>
+
+                <div class="comment-box" ng-repeat="comment in main.task.comments" ng-class-odd="'odd'" ng-class-even="'even'">
+                <span>
+                    <h5>{{comment.commented_by}}</h5>
+                    <p>{{comment.body}}
+                    <small class="pull-right">{{comment.date | date:"h:mma 'on' MMM d, y"}}</small>
+                    </p>
+                </span>
+                </div>
+                <hr/>
+            </div>
+
+        </div>
+    </div>
+</div>
+</div>
+
+
+<!--Comment posting Modal -->
+  <div class="modal fade" id="commentPost" role="dialog">
+      <div class="vertical-alignment-helper">
+          <div class="modal-dialog vertical-align-center">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal">&times;</button>
+                      <h4 class="modal-title">Give ur comment</h4>
+                  </div>
+                  <div class="modal-body">
+                      <input required type="text" class="form-control" placeholder="Enter Comment" ng-model="comment"/>
+                  </div>
+                  <div class="modal-footer">
+                      <button class="btn btn-large btn-success" ng-click="main.postComment(comment)">Post</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+  <!--Modal-->
+
+  <!--Status changing Modal -->
+    <div class="modal fade" id="taskSelection" role="dialog">
+        <div class="vertical-alignment-helper">
+            <div class="modal-dialog vertical-align-center">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Would you like to help?</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-center">
+                            <button class="btn btn-large btn-success" ng-click="main.changeStatus()" data-dismiss="modal">Accept</button>
+                            <button class="btn btn-large btn-danger" data-dismiss="modal">Decline</button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--Modal-->
