@@ -771,4 +771,41 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
       });
     }
 
+app.Imgsrc = ['https://s3-us-west-2.amazonaws.com/facedataset/cmpe273/volunteer1.png' , 'https://s3-us-west-2.amazonaws.com/facedataset/cmpe273/voulanteer3.jpg',' https://s3-us-west-2.amazonaws.com/facedataset/cmpe273/volunteer-2.png'];
+this.fbpost = () =>{
+
+ 
+ //var i = app.badges.length ;
+ //if (app.badges.length == )
+
+
+window.fbAsyncInit = function() {
+   FB.init({
+     appId      : '207968289713992',
+     cookie     : true,
+     xfbml      : true,
+     version    : 'v2.8'
+   });
+   //FB.AppEvents.logPageView();
+   FB.ui({
+   method: 'share',
+   display: 'popup',
+   message: 'Test share',
+   href: app.Imgsrc[app.badges.length-1] 
+   
+ }, function(response){});
+  
+ };
+
+ (function(d, s, id){
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) {return;}
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+}
+
+
 });
