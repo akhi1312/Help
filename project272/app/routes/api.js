@@ -701,6 +701,11 @@ module.exports = function(router) {
                 res.json({ success: false, message: error });
             }
             else{
+
+                var userRejected;
+                if(req.body.status == 'available'){
+                    userRejected = doc.accepted_by;
+                }
                 if(req.body.status) doc.status = req.body.status;
 
                 if(req.body.requested_by) doc.accepted_by = req.body.requested_by;
@@ -776,6 +781,15 @@ module.exports = function(router) {
                     if(user.username == doc.accepted_by){
                         user.socket.emit('EarnedBadge',doc.posted_by);
                             console.log("Earned Badge event transmitted");
+                        }
+                    })
+                }
+
+                if(req.body.status == 'available'){
+                    server.map.forEach((user)=>{
+                        if(user.username == userRejected){
+                            user.socket.emit('rejectedEvent',doc.posted_by);
+                            console.log('rejection event has been transmitted');
                         }
                     })
                 }

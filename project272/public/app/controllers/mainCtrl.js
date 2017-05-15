@@ -173,6 +173,7 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
                                 app.socketForUserSet = true;
                             }
                             app.getPosts();
+                            app.getUserInfo();
                         }
                     });
                 }
@@ -287,7 +288,7 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
             });
         }
     }
-    app.getUserInfo();
+    //app.getUserInfo();
 
     this.postTask = (taskDetails)=>{
         console.log('inside post task method');
@@ -724,6 +725,13 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
         alert('Congratulations you received a badge for your good work');
     })
 
+    socket.on('rejectedEvent',(data)=>{
+        console.log('Sorry rejected event received');
+        console.log(data);
+        app.getPosts();
+        alert('Sorry task provider has disapproved your');
+    });
+
     // Function to logout the user
     app.logout = function() {
         showModal(2); // Activate modal that logs out user
@@ -733,6 +741,7 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
       console.log('1');
       app.getLocation(); //to get the users location
       //app.getPosts(); // Invoke function to get posts from databases
+      //app.getUserInfo();
       console.log('init')
   };
 
