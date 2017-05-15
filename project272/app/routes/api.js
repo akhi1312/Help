@@ -5,6 +5,10 @@ var secret = 'harrypotter'; // Create custom secret for use in JWT
 var nodemailer = require('nodemailer'); // Import Nodemailer Package
 var sgTransport = require('nodemailer-sendgrid-transport'); // Import Nodemailer Sengrid Transport Package
 
+var server = require('../../server.js');
+// var io = server.io;
+// var map = server.map;
+
 module.exports = function(router) {
 
     //Start Sendgrid Configuration Settings (Use only if using sendgrid)
@@ -648,6 +652,9 @@ module.exports = function(router) {
         new_task.posted_by = req.body.posted_by; //save author from request to Task object
         new_task.updated_on = new_task.created_at; //posted and update time will be the same for inital post
 
+        if(req.body.category) new_task.taskCateogry = req.body.category;
+        if(req.body.date) new_task.dateOfTask = req.body.date;
+
         console.log(new_task.status);
         new_task.status = 'available';
         console.log(new_task);
@@ -658,6 +665,14 @@ module.exports = function(router) {
                 }
             else {
                 console.log('task posted'); // Display success message
+                server.map.forEach((user)=>{
+                    if(user.username != req.body.posted_by){
+                        user.socket.emit('newTask',"New task has been added");
+                    }
+                    else {
+                        console.log("in else not allowed")
+                    }
+                })
                 res.json({ success: true, message: 'Task has been posted successfully' }); // Send success message back to controller/request
             }
         });
@@ -694,13 +709,82 @@ module.exports = function(router) {
                 if(req.body.title) doc.title = req.body.title;
 
                 if(req.body.description) doc.description = req.body.description;
+
+                if(req.body.dateOfTask) doc.dateOfTask = req.body.dateOfTask;
+
+                if(req.body.taskCateogry) doc.taskCateogry = req.body.taskCateogry;
+
                 doc.updated_on = Date.now();
+
                 doc.save();
+
+                if(req.body.status == 'completed'){
+                    var workingUser = doc.accepted_by;
+                    User.findOne({username:workingUser},function(err,userData){
+                        console.log(userData);
+                        if(err){
+                            console.log(err);
+                            res.json({success:false,message: err})
+                        }
+                        else{
+                            var numOfBadges = userData.badges;
+
+                            var badge;
+                            if(numOfBadges.length == 0){
+                                badge = {
+                                    title: "volunteer", date: Date.now(), description: "You just earned the level-1 badge by contributing to the society and keep doing it!!!!!"
+                                    }
+                            }
+                            else if(numOfBadges.length == 1){
+                                badge = {
+                                    title: "altruist",date: Date.now(), description: "You just earcned the level-2 badge which is known as altruist, keep spreading smiles !!!"
+                                }
+                            }
+                            else {
+                                badge = {
+                                    title:"philanthropist", date:Date.now(), description:"You just earned the our prestigious badge for helping us in making better world !!!"
+                                }
+                            }
+                            userData.badges.push(badge);
+                            console.log()
+                            userData.save();
+                            }
+                        })
+                    }
+                if(req.body.status == 'Requested' || req.body.status == 'submitted'){
+                server.map.forEach((user)=>{
+                    if(user.username == doc.posted_by){
+                        if(req.body.status == 'Requested'){
+                            user.socket.emit('taskRequestEvent',doc.accepted_by);
+                        }
+                        else{
+                            user.socket.emit('taskSubmittedEvent',doc.accepted_by);
+                        }
+                        console.log("Request/submitted updated event transmitted");
+                        }
+                    })
+                }
+                if(req.body.status == 'Accepted'){
+                    server.map.forEach((user)=>{
+                        if(user.username == doc.accepted_by){
+                            user.socket.emit('taskHasBeenAcceptedByClient',doc.posted_by);
+                                console.log("taskHasBeenAcceptedByClient event transmitted");
+                            }
+                        })
+                }
+                if(req.body.status == 'completed'){
+                    server.map.forEach((user)=>{
+                    if(user.username == doc.accepted_by){
+                        user.socket.emit('EarnedBadge',doc.posted_by);
+                            console.log("Earned Badge event transmitted");
+                        }
+                    })
+                }
                 res.json({ success: true, message: 'successfully updated' });
             }
         })
     })
-    //get the task object
+    //get the task object by id
     router.get('/posts/:taskId',(req,res)=>{
         console.log(req.params.taskId);
         Task.findOne({taskId: req.params.taskId}, (error,doc)=>{
@@ -722,7 +806,51 @@ module.exports = function(router) {
         })
     })
 
-    //get the task object
+    //get the task object by city
+    router.get('/posts/:city',(req,res)=>{
+        console.log(req.params.city);
+        Task.findOne({city: req.params.posted_at.location}, (error,doc)=>{
+            if(error){
+                console.log(error)
+                res.json({
+                    success: false,
+                    message : error
+                });
+            }
+            else{
+                console.log('get the task object successfullly');
+                res.json({
+                    success: true,
+                    message : 'retreived successfullly',
+                    tasksByCity : doc
+                });
+            }
+        })
+    })
+
+    //get the task object by status
+    router.get('/posts/:status',(req,res)=>{
+        console.log(req.params.status);
+        Task.findOne({status: req.params.status}, (error,doc)=>{
+            if(error){
+                console.log(error)
+                res.json({
+                    success: false,
+                    message : error
+                });
+            }
+            else{
+                console.log('get the task object successfullly');
+                res.json({
+                    success: true,
+                    message : 'retreived successfullly',
+                    tasksByStatus : doc
+                });
+            }
+        })
+    })
+
+    //get the task object by category
     router.get('/posts/:taskCateogry',(req,res)=>{
         console.log(req.params.taskCateogry);
         Task.find({taskId: req.params.taskCategory}, (error,doc)=>{
@@ -760,7 +888,7 @@ module.exports = function(router) {
             }
         })
     })
-router.get('/users/:username', function(req, res) {
+    router.get('/users/:username', function(req, res) {
         console.log(req.params.username);
         User.findOne({ username: req.params.username },(err, user)=> {
                     if(err){
@@ -780,5 +908,48 @@ router.get('/users/:username', function(req, res) {
                     }
             })
         })
+
+        router.get('/users/:city', function(req, res) {
+            console.log(req.params.city);
+            User.find({ city: req.params.city },(err, _user)=> {
+                        if(err){
+                            console.log(err)
+                            res.json({
+                                success: false,
+                                message : error
+                            });
+                        }
+                        else{
+                            console.log('get the user objects successfullly');
+                            res.json({
+                                success: true,
+                                message : 'retreived successfullly',
+                                users : _user
+                            });
+                        }
+                })
+            })
+
+            router.get('/users/:skill', function(req, res) {
+                console.log(req.params.skill);
+                User.find({ skills : req.params.skill },(err, user)=> {
+                            if(err){
+                                console.log(err)
+                                res.json({
+                                    success: false,
+                                    message : error
+                                });
+                            }
+                            else{
+                                console.log('get the user object successfullly');
+                                res.json({
+                                    success: true,
+                                    message : 'retreived successfullly',
+                                    users : _user
+                                });
+                            }
+                    })
+            })
+
     return router; // Return the router object to server
 };

@@ -81,14 +81,14 @@ var UserSchema = new Schema({
     username: { type: String, lowercase: true, required: true, unique: true, validate: usernameValidator },
     password: { type: String, required: true, validate: passwordValidator, select: false },
     email: { type: String, required: true, lowercase: true, unique: true, validate: emailValidator },
-    phoneNumber: {type : Number , required:true , unique:true ,validate : phoneNumber},
+    phoneNumber: {type : String , required:true , unique:true ,validate : phoneNumber},
     city : String,
     active: { type: Boolean, required: true, default: false },
     temporarytoken: { type: String, required: true },
     resettoken: { type: String, required: false },
     permission: { type: String, required: true, default: 'user' },
     badges: [{ title: String, date: Date, description: String }],//Rahil Modi
-    skills: [{type:String}]
+    skills: [String]
 });
 
 // Middleware to ensure password is encrypted before saving user to database

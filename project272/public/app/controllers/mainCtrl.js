@@ -1,7 +1,23 @@
 angular.module('mainController', ['authServices', 'userServices','taskServices']) //Rahil Modi
+
+.factory('socket', ['$rootScope', function($rootScope) {
+  var socket = io.connect();
+  console.log('starting socket');
+  return {
+    on: function(eventName, callback){
+      socket.on(eventName, callback);
+    },
+    emit: function(eventName, data) {
+      socket.emit(eventName, data);
+    }
+  };
+}])
 // Controller: mainCtrl is used to handle login and main index functions (stuff that should run on every page) //Rahil Modi
 .controller('mainCtrl',function(Auth, $timeout, $location, $rootScope, $window, $interval, User, AuthToken, $scope, Jobs,socket) {
+    console.log('2');
     var app = this;
+    app.socketForUserSet = false;
+    this.listOfCategories = ["Driving", "Volunteer", "General"];
     app.loadme = false; // Hide main HTML until data is obtained in AngularJS
     if ($window.location.pathname === '/') app.home = true; // Check if user is on home page to show home page div
 
@@ -124,9 +140,11 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
     // Will run code every time a route changes
     $rootScope.$on('$routeChangeStart', function() {
         if (!app.checkingSession) app.checkSession();
+        console.log('route change');
 
         // Check if user is logged in
         if (Auth.isLoggedIn()) {
+            console.log('user logged in');
             // Custom function to retrieve user data
             Auth.getUser().then(function(data) {
                 if (data.data.username === undefined) {
@@ -135,6 +153,7 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
                     app.isLoggedIn = false;
                     $location.path('/');
                 } else {
+                    console.log('user is known')
                     app.isLoggedIn = true; // Variable to activate ng-show on index
                     app.username = data.data.username; // Get the user name for use in index
                     checkLoginStatus = data.data.username;
@@ -143,9 +162,17 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
                         if (data.data.permission === 'admin' || data.data.permission === 'moderator') {
                             app.authorized = true; // Set user's current permission to allow management
                             app.loadme = true; // Show main HTML now that data is obtained in AngularJS
+                            app.getPosts();
+                            console.log('user is admin or moderator');
                         } else {
+                            console.log('user is not admin ot moderator');
                             app.authorized = false;
                             app.loadme = true; // Show main HTML now that data is obtained in AngularJS
+                            if(!app.socketForUserSet){
+                                socket.emit('userLoggedIn',app.username);
+                                app.socketForUserSet = true;
+                            }
+                            app.getPosts();
                         }
                     });
                 }
@@ -181,6 +208,7 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
 
     // Function that performs login
     this.doLogin = function(loginData) {
+        console.log('inside do Login');
         app.loading = true; // Start bootstrap loading icon
         app.errorMsg = false; // Clear errorMsg whenever user attempts a login
         app.expired = false; // Clear expired whenever user attempts a login
@@ -191,6 +219,7 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
         Auth.login(app.loginData).then(function(data) {
             // Check if login was successful
             if (data.data.success) {
+                console.log('user login successfully');
                 app.loading = false; // Stop bootstrap loading icon
                 $scope.alert = 'alert alert-success'; // Set ng class
                 app.successMsg = data.data.message + '...Redirecting'; // Create Success Message then redirect
@@ -223,7 +252,7 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
     // Function that post task
 
 
-    function getUserInfo(){
+    app.getUserInfo = ()=>{
         if (Auth.isLoggedIn()) {
             // Check if a the token expired
             Auth.getUser().then(function(data) {
@@ -243,9 +272,9 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
                             console.log("userInfo received successfully");
                             console.log(data);
                             app.userInfo = data.data.user;
-                            app.badges = app.userInfo.Badges;
+                            app.badges = app.userInfo.badges;
                             app.name = app.userInfo.name;
-                            app.mobile = app.userInfo.mobile;
+                            app.mobile = app.userInfo.phoneNumber;
                             app.city = app.userInfo.city;
                             console.log(app.userInfo);
                         }
@@ -258,7 +287,7 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
             });
         }
     }
-    getUserInfo();
+    app.getUserInfo();
 
     this.postTask = (taskDetails)=>{
         console.log('inside post task method');
@@ -271,6 +300,11 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
         //     commented_by: app.username
         // }
         console.log(app._city);
+        console.log(app.taskDetails.category);
+        if(app.taskDetails.day){
+            var day = formatDate(app.taskDetails.day);
+            app.taskDetails.date = day;  //display the date of the task
+        }
         app.taskDetails.posted_at={
             location : app._city,
             latitude : app.lat,
@@ -280,6 +314,8 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
             if(data.data.success){
                 console.log(data.data.message);
                 app.taskDetails = {};
+                socket.emit('taskOwnerMap',app.username);
+                console.log('registering socket');
                 app.getPosts();
             }
             else{
@@ -287,7 +323,16 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
             }
         })
     }
+    function formatDate(date) {
+        var d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
 
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+        return [year, month, day].join('-');
+    }
     //to get comments
     this.getComments = (taskId)=>{
         console.log(taskId);
@@ -301,6 +346,28 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
         $scope.toshowComment = true;
         //$scope.selectedValue = index;
         $scope.selectedValue = taskId;
+    }
+
+    this.setClickedUser = (_user)=>{
+        app.clickedUsername = _user;
+        Auth.getUserInfo(_user).then((data)=>{
+            if(data.data.success){
+                console.log("userInfo received successfully");
+                console.log(data);
+                app.clickedUserInfo = data.data.user;
+                if(app.clickedUserInfo.badges) app.clickedUserbadges = app.clickedUserInfo.badges;
+                app.clickedUserFullname = app.clickedUserInfo.name;
+                if(app.clickedUserInfo.phoneNumber) app.clickedUsermobile = app.clickedUserInfo.phoneNumber;
+                if(app.clickedUserInfo.city) app.clickedUsercity = app.clickedUserInfo.city;
+                app.clickedUseremail = app.clickedUserInfo.email;
+                if(app.clikedUserInfo.skills) app.clickedUserSkills = app.clikedUserInfo.skills
+                console.log(app.clickedUserInfo);
+            }
+            else{
+                console.log('username is not exist')
+                console.log('error in retrieving');
+            }
+        })
     }
 
     this.PostObject = (taskId)=>{
@@ -360,6 +427,7 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
                 console.log('status is updated successfully');
                 $('#taskSelection').modal('hide');
                 app.getPosts();
+                app.getUserInfo();
             }else{
                 console.log('error');
                 //$('#taskSelection').modal('hide');
@@ -396,6 +464,7 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
                 console.log('status is reverted backed successfully');
                 $('#taskSelection').modal('hide');
                 app.getPosts();
+                app.getUserInfo();
             }else{
                 console.log('error');
                 $('#taskSelection').modal('hide');
@@ -441,34 +510,47 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
         comment_taskId = _taskId;
     }
 
-    var taskNo,taskSubject,taskBody;
-    this.Params2 = (Id,title,description)=>{
+    var taskNo,taskSubject,taskBody,taskCat,taskDate;
+    this.Params2 = (Id,title,description,category,date)=>{
         console.log('params2');
         console.log(Id+','+title+','+description);
+        var d = new Date(date);
+        console.log(d);
         $scope.subject = title;
         $scope.body = description;
+        $scope.date = d;
+        $scope.category = category;
         taskNo = Id;
         taskSubject = title;
         taskBody = description;
+        taskCat = category;
+        taskDate = date;
         console.log($scope.subject);
         console.log($scope.body);
+        console.log($scope.date);
+        console.log($scope.category);
 
     }
 
-    this.updateTask = (subject,body)=>{
+    this.updateTask = (subject,body,category,date)=>{
         console.log(subject);
         console.log(body);
+        console.log(category);
+        console.log(date);
 
-        if(body == undefined || subject == undefined || body == '' || subject == ''){
+
+        if(body == undefined || subject == undefined || body == '' || subject == '' || category == '' || category == undefined){
             alert('All fields are mendatory')
         }
         else{
-            this.subject = '';
-            this.title = '';
+            var day = formatDate(date);
+
             var updatedData = {
                 'taskId' : taskNo,
                 'title' : subject,
-                'description' : body
+                'description' : body,
+                'dateOfTask' : day,
+                'taskCateogry' : category
             }
             Jobs.updateJob(updatedData).then((data)=>{
                 console.log(data);
@@ -522,7 +604,31 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
         });
     }
 
-    console.log(app.badges);
+    this.getPostsByStatus =(status)=>{
+        // Runs function to get all the posts from database
+        console.log("posts by status")
+        Jobs.getPostByCategory(status).then(function(data) {
+            console.log(data);
+            if (data.data.success) {
+                app.tasksByStat = data.data.tasksByStatus;
+            } else {
+                console.log("error in fetching posts from the server") // Stop loading icon
+            }
+        });
+    }
+
+    this.getPostsByCity =(city)=>{
+        // Runs function to get all the posts from database
+        console.log("posts by city")
+        Jobs.getPostsByCity(city).then(function(data) {
+            console.log(data);
+            if (data.data.success) {
+                app.taskByCity = data.data.tasksByCity;
+            } else {
+                console.log("error in fetching posts from the server") // Stop loading icon
+            }
+        });
+    }
 
     app.getPosts =()=>{
         // Runs function to get all the posts from database
@@ -536,8 +642,6 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
             }
         });
     }
-
-    app.getPosts(); // Invoke function to get posts from databases
 
     var options = {
           enableHighAccuracy: true,
@@ -554,9 +658,10 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
         var lat,log;
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(function(pos){
+                console.log('inside pos');
                 $scope.lat = pos.coords.latitude;
                 $scope.log = pos.coords.longitude;
-                console.log(lat +','+log);
+                console.log($scope.lat +','+$scope.log);
             },error,options);
         } else {
             console.log("Geolocation is not supported by this browser.");
@@ -570,7 +675,7 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
             app._city = data.city;
             var _str = data.loc;
             var loc = _str.split(",");
-            console.log(loc);
+            console.log(app._city);
             if(app.lat == undefined){
                 console.log('latitude is not retrieved by navigator.geolocation')
                 app.lat=loc[0];
@@ -584,19 +689,77 @@ angular.module('mainController', ['authServices', 'userServices','taskServices']
         })
     }
 
+    socket.on('taskRequestEvent',(data)=>{
+        console.log('taskRequestEvent event received');
+        console.log(data);
+        app.getPosts();
+        alert(data + 'has requested for the task');
+    })
+
+    socket.on('taskSubmittedEvent',(data)=>{
+        console.log('taskSubmittedEvent event received');
+        console.log(data);
+        app.getPosts();
+        alert(data + 'has submitted assigned task');
+    })
+
+    socket.on('newTask',(data)=>{
+        console.log('new event received');
+        console.log(data);
+        app.getPosts();
+        alert('New feed is available in the dashboard');
+    })
+
+    socket.on('taskHasBeenAcceptedByClient',(data)=>{
+        console.log('taskHasBeenAcceptedByClient event received');
+        console.log(data);
+        app.getPosts();
+        alert('Start working on the Task');
+    })
+    socket.on('EarnedBadge',(data)=>{
+        console.log('Earned badge event receeived');
+        console.log(data);
+        app.getPosts();
+        app.getUserInfo();
+        alert('Congratulations you received a badge for your good work');
+    })
+
     // Function to logout the user
     app.logout = function() {
         showModal(2); // Activate modal that logs out user
     };
 
    this.init = ()=>{
+      console.log('1');
       app.getLocation(); //to get the users location
+      //app.getPosts(); // Invoke function to get posts from databases
       console.log('init')
+  };
 
-      socket.on('notifications', function (data) {
+  //get users by city
+  this.getUsersByCity = (city)=>{
+      console.log(city);
+      User.getUsersByCity(city).then(function(data){
           console.log(data);
-      }
- )};
+          if (data.data.success) {
+              app.usersByCity = data.data.users;
+          } else {
+              console.log("error in fetching posts from the server") // Stop loading icon
+          }
+      });
+    }
 
+    //get Users by skill
+  this.getUsersBySkill = (city)=>{
+      console.log(city);
+      User.getUsersBySkill(city).then(function(data){
+          console.log(data);
+          if (data.data.success) {
+              app.usersBySkill = data.data.users;
+          } else {
+              console.log("error in fetching posts from the server") // Stop loading icon
+          }
+      });
+    }
 
 });

@@ -1047,7 +1047,7 @@ Posts display Rahil Modi
 }
 
 #dateOfTask{
-    max-width:17%;
+    max-width:100%;
 }
 
 /* Modal alignment*/
@@ -1074,4 +1074,12 @@ Posts display Rahil Modi
 
 .modal-open{
     overflow: hidden;
+}
+
+.form-control-selection{
+    max-width: 50%;
+}
+
+.small{
+    font-size: 1.2em;
 }

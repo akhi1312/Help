@@ -4,10 +4,22 @@
   <br>
   <textarea required class="form-control" maxlength="200" rows="3" placeholder="Task Description" ng-model="main.taskDetails.description"></textarea>
   <br>
-  <input class="btn submit-btn pull-right" type="submit" value="Post!" />
-  <div class="input-group">
-   <span class="input-group-addon" id="basic-addon1">Date</span>
-   <input type="date" class="form-control"aria-describedby="basic-addon1" ng-model="main.taskDetails.day" id="dateOfTask" />
+  <div class="container">
+      <div class="row">
+          <div class="col-md-4">
+              <div class = "input-group">
+                  <span>Task Category:</span>
+                      <select required class="form-control" ng-model="main.taskDetails.category" ng-options="category for category in main.listOfCategories"></select>
+                  </div>
+          </div>
+          <div class="col-md-4">
+              <span> Task Date </span>
+              <input type="date" class ="form-control" aria-describedby="basic-addon1" ng-model="main.taskDetails.day" id="dateOfTask" />
+          </div>
+          <div class="col-md-4">
+               <input class="btn btn-lg submit-btn pull-right inline" type="submit" value="Post!" />
+          </div>
+      </div>
   </div>
 
 </form>
@@ -31,13 +43,14 @@
                 </button>
                 <h4>Title : {{task.title}}</h4>
             </span>
-
+            <span ng-if="task.taskCateogry != undefined" >Category : {{ task.taskCateogry }} </span> <span ng-if="task.dateOfTask != undefined">  &nbsp &nbsp  |   &nbsp &nbsp  Date : {{ task.dateOfTask}} </span>
             <p>Description : {{task.description}}</p>
-            <small>Posted by @{{task.posted_by}}</small>
-            <small ng-if="task.status == 'Requested'">| Requested by @{{task.accepted_by}}</small>
-            <small ng-if="task.status == 'Accepted'">| Working @{{task.accepted_by}}</small>
-            <small ng-if="task.status == 'submitted'"> | Submitted by {{task.accepted_by}}</small>
-            <small ng-if="task.status == 'completed'">| Done by @{{task.accepted_by}}</small>
+
+            <a class="btn" ng-click="main.setClickedUser(task.posted_by)" data-toggle="modal" data-target="#userInfoModal"><small>Posted by @{{task.posted_by}}</small></a>
+            <a class="btn" ng-click="main.setClickedUser(task.accepted_by)" data-toggle="modal" data-target="#userInfoModal"><small ng-if="task.status == 'Requested'">Requested by @{{task.accepted_by}}</small></a>
+            <a class="btn" ng-click="main.setClickedUser(task.accepted_by)" data-toggle="modal" data-target="#userInfoModal"><small ng-if="task.status == 'Accepted'">Working @{{task.accepted_by}}</small></a>
+            <a class="btn" ng-click="main.setClickedUser(task.accepted_by)" data-toggle="modal" data-target="#userInfoModal"><small ng-if="task.status == 'submitted'">Submitted by {{task.accepted_by}}</small></a>
+            <a class="btn" ng-click="main.setClickedUser(task.accepted_by)" data-toggle="modal" data-target="#userInfoModal"><small ng-if="task.status == 'completed'">Done by @{{task.accepted_by}}</small></a>
             <button type="button" class="btn pull-right" id="comments" ng-click="main.getComments(task.taskId)" ng-hide="toshowComment && selectedValue ==  task.taskId">comments</button>
             <button type="button" class="btn pull-right" id="comments" ng-click="main.closeComments(task.taskId)" ng-show="toshowComment && selectedValue == task.taskId">Close comments</button>
             <div>
@@ -109,3 +122,38 @@
         </div>
     </div>
     <!--Modal-->
+    <!--User Info Modal-->
+    <div class="modal fade" id="userInfoModal" role="dialog">
+        <div class="vertical-alignment-helper">
+            <div class="modal-dialog vertical-align-center">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">{{ main.clickedUsername }}</h4>
+                    </div>
+                    <div class="modal-body">
+                            <label>Name : {{ main.clickedUserFullname }}</label>
+                            <br>
+                            <label>City : {{ main.clickedUsercity }}</label>
+                            <br>
+                            <label>Mobile : {{ main.clickedUsermobile }}</label>
+                            <br>
+                            <label>Email : {{ main.clickedUseremail }}</label>
+                            <br>
+                            <label ng-if = main.clickedUserbadges.length != 0>Earned Badges</label>
+                            <ul ng-repeat="x in main.clickedUserbadges track by $index">
+                                <li>{{ x.title }}</li>
+                            </ul>
+                            <label ng-if = main.clickedUserSkills.length != 0>Interested in Following</label>
+                            <ul ng-repeat="skill in main.clickedUserSkills track by $index">
+                                <li>{{ skill }}</li>
+                            </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-info" data-dismiss="modal">close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--End of Modal-->

@@ -25,11 +25,37 @@ app.use('/api', appRoutes); // Assign name to end points (e.g. '/api/users' ,etc
 var server = http.createServer(app).listen(port, function(){
   console.log('Express server listening on port ' + port);
 });
+var map = [];
 
 var io = require('socket.io')(server);
 io.on('connection', function(socket){
   console.log("user connected");
+  console.log(socket.id);
+  //console.log(socket);
   socket.emit('notifications', "hello");
+  socket.on('userLoggedIn',function(data){
+      console.log(data);
+      console.log('userLoggedIn');
+      var json = {username:data,socket:socket};
+      console.log(map);
+      if(map.length == 0)
+      {
+          map.push(json);
+          console.log(map);
+      }
+      else {
+          map.forEach((user)=>{
+              if(user.username == data){
+                  console.log('user already exist..');
+              }
+              else {
+                  map.push(json);
+                  console.log(map);
+              }
+          });
+      }
+  });
+ 
   socket.on('disconnect', function(){
 	  console.log("connection closed");
   });
@@ -88,3 +114,6 @@ app.get('*', function(req, res) {
 // app.listen(port, function() {
 //     console.log('Running the server on port ' + port); // Listen on configured port
 // });
+
+exports.io = io;
+exports.map = map;

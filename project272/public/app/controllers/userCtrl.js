@@ -11,7 +11,13 @@ angular.module('userControllers', ['userServices'])
         app.loading = true; // Activate bootstrap loading icon
         app.errorMsg = false; // Clear errorMsg each time user submits
 
-        // If form is valid and passwords match, attempt to create user         
+        console.log(app.regData);
+        app.regData.skills=[];
+        if(app.regData.skill1) app.regData.skills.push('Driving');
+        if(app.regData.skill2) app.regData.skills.push('Volunteer');
+        if(app.regData.skill3) app.regData.skills.push('General');
+
+        // If form is valid and passwords match, attempt to create user
         if (valid && confirmed) {
             app.regData.name = app.regData.firstName + " " + app.regData.lastName; // Combine first and last name before submitting to database
             // Runs custom function that registers the user in the database 

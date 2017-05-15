@@ -12,6 +12,7 @@ angular.module('taskServices', [])
 
     // Get all the users from database
     jobFactory.getPosts = ()=>{
+        console.log('getPosts');
         return $http.get('/api/posts/');
     };
 
@@ -25,6 +26,16 @@ angular.module('taskServices', [])
         console.log(taskCategory);
         return $http.get('/api/posts/'+taskCategory);
     };
+
+    jobFactory.getPostByCity = (city)=>{
+        console.log(city);
+        return $http.get('/api/posts/'+city);
+    }
+
+    jobFactory.getPostByStatus = (status)=>{
+        console.log(status);
+        return $http.get('/api/posts/'+city);
+    }
 
     // Edit a Post
     jobFactory.editPost = function(id) {

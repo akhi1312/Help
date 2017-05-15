@@ -66,8 +66,20 @@ angular.module('userServices', [])
 
     // Get all the users from database
     userFactory.getUsers = function() {
-        return $http.get('/api/management/');
+        return $http.get('/api/users/');
     };
+
+    // Get all the users from database
+    userFactory.getUsersByCity = function(city) {
+        return $http.get('/api/users/'+city);
+    };
+
+    // Get all the users from database
+    userFactory.getUsersBySkill = function(skill) {
+        return $http.get('/api/users/'+skill);
+    };
+
+
 
     // Get user to then edit
     userFactory.getUser = function(id) {

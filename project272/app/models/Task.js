@@ -19,7 +19,8 @@ var taskSchema = new Schema(
         status : {type:String, default:'available'},
         accepted_by:  {type:String, default:'none'},
         updated_on: {type: Date},
-        taskCateogry: {type:String}
+        taskCateogry: {type:String,required:false},
+        dateOfTask: {type: String, required:false}
     }
 );
 taskSchema.plugin(autoIncrement.plugin,{model:'Task',field:'taskId',startAt:1,
