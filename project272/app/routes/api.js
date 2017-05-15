@@ -14,8 +14,8 @@ module.exports = function(router) {
     //Start Sendgrid Configuration Settings (Use only if using sendgrid)
     var options = {
         auth: {
-            api_user: '', // Sendgrid username
-            api_key: '' // Sendgrid password
+            api_user: 'rahilModi', // Sendgrid username
+            api_key: 'Rpmodi@3112' // Sendgrid password
         }
     };
 

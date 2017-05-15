@@ -10,8 +10,8 @@ var path = require('path'); // Import path module
 var passport = require('passport'); // Express-compatible authentication middleware for Node.js.
 var social = require('./app/passport/passport')(app, passport); // Import passport.js End Points/API
 var http = require('http');
-// var client = require('twilio')('ACad00c64222181c5f5dca2dfc0a071c66')('b0d2ef8a0257c32b456b262ea29a811e')
-var client = require('twilio');
+//var client = require('twilio')('ACad00c64222181c5f5dca2dfc0a071c66')('b0d2ef8a0257c32b456b262ea29a811e')
+//var client = require('twilio');
 //Rahil Modi
 //const config = require('./config/database');
 app.use(morgan('dev')); // Morgan Middleware
@@ -64,7 +64,7 @@ io.on('connection', function(socket){
 
 // var accountSid = 'ACad00c64222181c5f5dca2dfc0a071c66';
 // var authToken = 'b0d2ef8a0257c32b456b262ea29a811e';
-//
+
 // //require the Twilio module and create a REST client
 // var client = require('twilio')(accountSid, authToken);
 // client.messages.create({
