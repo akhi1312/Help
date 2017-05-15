@@ -665,9 +665,38 @@ module.exports = function(router) {
                 }
             else {
                 console.log('task posted'); // Display success message
+  
+   //send grid message
+
+        // Create e-mail object to send to user
+                         User.find({ city: new_task.posted_at.location},(err, _user)=> {
+                            if(err){
+                                console.log('error in fetching');
+                                //res.json({success : true, message :'Task has been posted'})
+                            }
+                            else{
+                                _user.forEach((u)=>{
+                                    var email = {
+                                from: 'CMPE 273 Team 23, akhilesh.deowanshi@gmail.com',
+                                to: u.email,
+                                subject: 'New Task has been posted',
+                                text: 'Hello ' + u.name + ', A new task has been posted',
+                                //html: 'Hello<strong> ' + user.name 
+                                };
+                                // Function to send e-mail to the user
+                                client.sendMail(email, function(err, info) {
+                                    if (err) console.log(err); // If error with sending e-mail, log to console/terminal
+                                });
+                                })
+                            }
+                         });       
+
+
+ 
                 server.map.forEach((user)=>{
                     if(user.username != req.body.posted_by){
                         user.socket.emit('newTask',"New task has been added");
+
                     }
                     else {
                         console.log("in else not allowed")
@@ -676,6 +705,7 @@ module.exports = function(router) {
                 res.json({ success: true, message: 'Task has been posted successfully' }); // Send success message back to controller/request
             }
         });
+      }
     });
 // Route to get all posts
     router.get('/posts', (req, res) => {
