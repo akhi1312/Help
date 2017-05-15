@@ -701,7 +701,6 @@ module.exports = function(router) {
                 res.json({ success: false, message: error });
             }
             else{
-
                 if(req.body.status) doc.status = req.body.status;
 
                 if(req.body.requested_by) doc.accepted_by = req.body.requested_by;
@@ -780,6 +779,7 @@ module.exports = function(router) {
                         }
                     })
                 }
+
                 res.json({ success: true, message: 'successfully updated' });
             }
         })
