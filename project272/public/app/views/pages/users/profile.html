@@ -32,7 +32,7 @@
 </div>
 
 <div class="panel panel-info">
-    <div class="panel-heading" style="text-align: center;"><strong>Earned Badges</strong></div>
+    <div class="panel-heading" style="text-align: center;"><strong>Earned Badge</strong></div>
     <!-- <div>
         <div ng-if="badges in main.badges track by $index">
             badges
@@ -40,8 +40,20 @@
     </div> -->
     <div style="text-align:center;">
         <strong ng-if="main.badges.length == 0">Sorry, u have not earned any badges </strong>
-        <div ng-if="main.badges.length != 0" ng-repeat=" badge in main.badges track by $index" >{{ badge.title }}</div>
+        <div ng-if="main.badges.length != 0">{{badge.title}}
+        <div>
+            <img src="{{main.Imgsrc[main.badges.length-1]}}"/>
+        </div>
+     
+    <div style="text-align:right">
+         <div id = "status">
+        <a href="#" ng-disabled="main.disabled || facebook.disabled || twitter.disabled || google.disabled" ng-click="main.fbpost()">
+        <img class="social-icons" src="assets/images/facebook.svg">
+         </a>
+         </div> 
+
     </div>
+</div>
 </div>
 
 <div class="panel panel-info">
