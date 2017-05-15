@@ -669,13 +669,16 @@ module.exports = function(router) {
    //send grid message
 
         // Create e-mail object to send to user
+          console.log('outside  user find location');
                          User.find({ city: new_task.posted_at.location},(err, _user)=> {
                             if(err){
                                 console.log('error in fetching');
                                 //res.json({success : true, message :'Task has been posted'})
                             }
                             else{
+                                console.log('I am here inside sending message part');
                                 _user.forEach((u)=>{
+                                    console.log(u.username);
                                     var email = {
                                 from: 'CMPE 273 Team 23, akhilesh.deowanshi@gmail.com',
                                 to: u.email,
@@ -690,9 +693,6 @@ module.exports = function(router) {
                                 })
                             }
                          });       
-
-
- 
                 server.map.forEach((user)=>{
                     if(user.username != req.body.posted_by){
                         user.socket.emit('newTask',"New task has been added");
@@ -705,7 +705,7 @@ module.exports = function(router) {
                 res.json({ success: true, message: 'Task has been posted successfully' }); // Send success message back to controller/request
             }
         });
-      }
+      
     });
 // Route to get all posts
     router.get('/posts', (req, res) => {
