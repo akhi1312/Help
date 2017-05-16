@@ -34,7 +34,7 @@ $ npm install
 ```
 ##  Using Docker 
 
-##### It will pull the image from Docker hun .
+##### It will pull the image from Docker hub .
 ```
 $ docker run -p 8080:8080 --name myapp -d akhilesh1312/helpother
 ```
