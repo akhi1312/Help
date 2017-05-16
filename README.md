@@ -18,7 +18,7 @@ The idea is to develop mobile application for android platform to help blind by 
 
 This is a web application  using Moongoose MongoDB , ExpressJS, AngularJS, NodeJS , Socket io and various api.
 
-A working example can be found [here](helpother.me).
+A working example can be found [here](http://helpother.me).
 
 ## Requirements
 
@@ -34,6 +34,7 @@ $ npm install
 ```
 ##  Using Docker 
 
+##### It will pull the image from Docker hun .
 ```
 $ docker run -p 8080:8080 --name myapp -d akhilesh1312/helpother
 ```
