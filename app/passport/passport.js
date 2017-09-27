@@ -92,7 +92,7 @@ module.exports = function(app, passport) {
     passport.use(new GoogleStrategy({
             clientID: '766736292328-kjphrr3e8li1pbr2u2milkigtjrau36o.apps.googleusercontent.com', // Replace with your Google Developer App client ID
             clientSecret: 'VKFoSN2Gev8_KDrWiK_NvGE-', // Replace with your Google Developer App client ID
-            callbackURL: "http://localhost:8080/auth/google/callback" // Replace with your Google Developer App callback URL
+            callbackURL: "https://heroku-node-akhi.herokuapp.com/auth/google/callback" // Replace with your Google Developer App callback URL
         },
         function(accessToken, refreshToken, profile, done) {
             User.findOne({ email: profile.emails[0].value }).select('username active password email').exec(function(err, user) {
