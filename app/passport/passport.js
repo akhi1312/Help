@@ -40,7 +40,7 @@ module.exports = function(app, passport) {
     passport.use(new FacebookStrategy({
             clientID: '629193910620147', // Replace with your Facebook Developer App client ID
             clientSecret: '531d2d469d5404ecd1b7872db200bee3', // Replace with your Facebook Developer client secret
-            callbackURL: "http://localhost:8080/auth/facebook/callback", // Replace with your Facebook Developer App callback URL
+            callbackURL: "https://heroku-node-akhi.herokuapp.com/auth/facebook/callback", // Replace with your Facebook Developer App callback URL
             profileFields: ['id', 'displayName', 'photos', 'email']
         },
         function(accessToken, refreshToken, profile, done) {
@@ -60,7 +60,7 @@ module.exports = function(app, passport) {
     passport.use(new TwitterStrategy({
             consumerKey: 'F8IG2DCHS4uLUWaAZMqqF0NuB', // Replace with your Twitter Developer App consumer key
             consumerSecret: 'Q30tU0fPAbLog6ZKWiB1p45zHRpFleLID2paRr7tL7IDzDRtCQ', // Replace with your Twitter Developer App consumer secret
-            callbackURL: "http://localhost:8080/auth/twitter/callback", // Replace with your Twitter Developer App callback URL
+            callbackURL: "https://heroku-node-akhi.herokuapp.com/auth/twitter/callback", // Replace with your Twitter Developer App callback URL
             userProfileURL: "https://api.twitter.com/1.1/account/verify_credentials.json?include_email=true"
         
         },
