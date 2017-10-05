@@ -18,7 +18,7 @@ The idea is to develop mobile application for android platform to help blind by 
 
 This is a web application  using Moongoose MongoDB , ExpressJS, AngularJS, NodeJS , Socket io and various api.
 
-A working example can be found [here](http://helpother.me).
+A working example can be found [here](https://heroku-node-akhi.herokuapp.com).
 
 ## Requirements
 
